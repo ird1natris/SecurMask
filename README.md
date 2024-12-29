@@ -39,7 +39,7 @@ Ensure the following tools are installed:
 - **Node.js 14.x or later** (for the frontend and Node.js backend)
 - **Python 3.8 or later** (for the Flask backend)
 - **pip** (Python package manager)
-- **npm** or **yarn**
+- **npm**
 
 ## Installation
 
@@ -52,7 +52,7 @@ Ensure the following tools are installed:
    
    Navigate to the `backend` folder:
    ```bash
-   cd backend
+   cd server
    ```
    
    Install the required Python packages:
@@ -62,24 +62,19 @@ Ensure the following tools are installed:
    
    Run the Flask backend:
    ```bash
-   python app.py  
+   npm start  
    ```
 
 3. **Set Up the Frontend**
-
-   Navigate to the `frontend` folder:
-   ```bash
-   cd frontend
-   ```
 
    Install the dependencies:
    ```bash
    npm install  
    ```
 
-   Start the React development server:
+   Start the React client server:
    ```bash
-   npm start    
+   npm run dev    
    ```
   
 4. **Access the Application**
