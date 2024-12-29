@@ -6,32 +6,35 @@ import PasswordValidation from './PasswordValidation';  // Import PasswordValida
 import { addFileToIndexedDB, getFilesFromIndexedDB, deleteFileFromIndexedDB, updateFileWithMaskedContent, fetchFile } from "../utils/indexedDBUtils";
 import Swal from "sweetalert2";
 import ExcelJS from 'exceljs';
-
+import { useLocation } from "react-router-dom";
 
 const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) => {
   const [localFiles, setLocalFiles] = useState([]);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const [decryptionKey, setDecryptionKey] = useState('');
   const [columns, setColumns] = useState([]);
+  const location = useLocation();
+  const updatedFiles = location.state?.updatedFiles || [];
 
-
-
-
+  
 
   useEffect(() => {
-    const fetchFiles = async () => {
-      try {
-        const files = await getFilesFromIndexedDB();
-        console.log("Fetched files:", files);
-        setLocalFiles(files); // Update the state to reflect the fetched files
-      } catch (error) {
-        console.error("Error fetching files from IndexedDB:", error);
-      }
-    };
+    if (updatedFiles.length > 0) {
+      setLocalFiles(updatedFiles); // Set local files if updatedFiles is available
+    } else {
+      const fetchFiles = async () => {
+        try {
+          const files = await getFilesFromIndexedDB();
+          //console.log("Fetched files:", files);
+          setLocalFiles(files); // Update the state to reflect the fetched files
+        } catch (error) {
+          console.error("Error fetching files from IndexedDB:", error);
+        }
+      };
 
-    fetchFiles();
-  }, [uploadedFiles]);
-
+      fetchFiles();
+    }
+  }, [uploadedFiles, updatedFiles]); 
 
 
 

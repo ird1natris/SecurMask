@@ -22,18 +22,18 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
     // You can now use `localFiles` to display the files from IndexedDB in your component
     useEffect(() => {
         const fetchFiles = async () => {
-          try {
-            const files = await getFilesFromIndexedDB();
-            console.log("Fetched files:", files);
-            setLocalFiles(files); // Update the state to reflect the fetched files
-          } catch (error) {
-            console.error("Error fetching files from IndexedDB:", error);
-          }
+            try {
+                const files = await getFilesFromIndexedDB();
+                console.log("Fetched files:", files);
+                setLocalFiles(files); // Update the state to reflect the fetched files
+            } catch (error) {
+                console.error("Error fetching files from IndexedDB:", error);
+            }
         };
-    
+
         fetchFiles();
-      }, [uploadedFiles]);
-      
+    }, [uploadedFiles]);
+
     const extractFileContentAndSignature = async (file) => {
         const fileText = await file.text(); // Read the file as text
 
@@ -81,7 +81,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                 fileId,
 
             });
-            
+
             const encryptedCSV = response.data.content;
 
             if (encryptedCSV) {
@@ -205,72 +205,73 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                 text: "Error detecting columns.",
             });
         }
-        
+
 
     };
-     // Add `uploadedFiles` to the dependency array
-    
+    // Add `uploadedFiles` to the dependency array
 
-     const handleValidPassword = (password) => {
+
+    const handleValidPassword = (password) => {
         setDecryptionKey(password);  // Set the decryption key after validation
         setShowPasswordValidation(false);  // Hide the password validation form
-    
+
         // Proceed with the file upload
         const uploadFiles = async () => {
-          const selectedFiles = Array.from(document.querySelector('input[type="file"]').files);
-    
-          for (const file of selectedFiles) {
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('key', password);
-    
-            try {
-              const response = await axios.post('http://localhost:8081/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                withCredentials: true,
-              });
-    
-              const { fileId, fileName } = response.data;
-              console.log("column", columns);
-    
-    
-              Swal.fire({
-                icon: "success",
-                title: "Upload Completed",
-                text: `${fileName} has been uploaded successfully! Note that your file that has not been mask will be remove in 1 hour time.`,
-              });
-              const fileData = {
-                id: fileId,
-                name: fileName,
-                status: 'unmask',
-                fileObject: file,
-                uploadedAt: new Date().toISOString(),
-                columns: columns,
-              };
-    
-              const localFileId = await addFileToIndexedDB(fileData);
-              const newFile = { ...fileData, id: localFileId };
-    
-              setUploadedFiles((prevFiles) => [...prevFiles, newFile]);
-    
-              const updatedFiles = await getFilesFromIndexedDB();
-              setLocalFiles(updatedFiles);
-              setUploadedFiles(updatedFiles);
-            } catch (error) {
-              console.error("Error uploading file:", error.response?.data || error.message);
-              const errorMessage = error.response?.data?.message || "Error uploading file";
-              Swal.fire({
-                icon: "error",
-                title: "Upload Error",
-                text: `Failed to upload ${file.name}: ${errorMessage}`, // Include the error message here
-              });
+            const selectedFiles = Array.from(document.querySelector('input[type="file"]').files);
+
+            for (const file of selectedFiles) {
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('key', password);
+
+                try {
+                    const response = await axios.post('http://localhost:8081/upload', formData, {
+                        headers: { 'Content-Type': 'multipart/form-data' },
+                        withCredentials: true,
+                    });
+
+                    const { fileId, fileName } = response.data;
+                    console.log("column", columns);
+
+
+                    Swal.fire({
+                        icon: "success",
+                        title: "Upload Completed",
+                        text: `${fileName} has been uploaded successfully! Note that your file that has not been mask will be remove in 1 hour time.`,
+                    });
+                    const fileData = {
+                        id: fileId,
+                        name: fileName,
+                        status: 'unmask',
+                        fileObject: file,
+                        uploadedAt: new Date().toISOString(),
+                        columns: columns,
+                    };
+
+                    const localFileId = await addFileToIndexedDB(fileData);
+                    const newFile = { ...fileData, id: localFileId };
+
+                    setUploadedFiles((prevFiles) => [...prevFiles, newFile]);
+
+                    const updatedFiles = await getFilesFromIndexedDB();
+                    setLocalFiles(updatedFiles);
+                    setUploadedFiles(updatedFiles);
+                } catch (error) {
+                    console.error("Error uploading file:", error.response?.data || error.message);
+                    const errorMessage = error.response?.data?.message || "Error uploading file";
+                    Swal.fire({
+                        icon: "error",
+                        title: "Upload Error",
+                        text: `Failed to upload ${file.name}: ${errorMessage}`, // Include the error message here
+                    });
+                }
             }
-          }
         };
-    
+
         uploadFiles();
-        navigate("/folder"); // Start uploading the files after the password is validated
-      };
+        navigate("/folder", { state: { updatedFiles: updatedFiles } });
+        // Start uploading the files after the password is validated
+    };
 
 
 
