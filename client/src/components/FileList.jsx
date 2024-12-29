@@ -92,7 +92,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
     const runCleanup = () => {
       cleanUpUnmaskedFiles();
       // Set up the next cleanup after 5 minutes
-      setTimeout(runCleanup, 40 * 60 * 1000); // 20 minutes = 300,000 milliseconds
+      setTimeout(runCleanup, 60 * 60 * 1000); // 20 minutes = 300,000 milliseconds
     };
 
     // Initial call to start the cleanup process
@@ -211,7 +211,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
           Swal.fire({
             icon: "success",
             title: "Upload Completed",
-            text: `${fileName} has been uploaded successfully`,
+            text: `${fileName} has been uploaded successfully. Note that your file that has not been mask will be remove in 1 hour time`,
           });
           const fileData = {
             id: fileId,
