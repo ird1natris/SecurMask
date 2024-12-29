@@ -1,6 +1,6 @@
 # SecurMask: Fortifying Data Privacy With Intelligent Masking
 
-**SecurMask** is a web application designed to securely mask sensitive data in .csv and .xlsx files. With a sleek React frontend and a dual backend powered by both Node.js and Flask, the app ensures a seamless and secure data masking experience.
+**SecurMask** is a web application designed to securely mask sensitive data and unmask masked data in .csv and .xlsx files. With a sleek React frontend and a dual backend powered by both Node.js and Flask, the app ensures a seamless and secure data masking and unmasking experience.
 
 ## Features
 
@@ -53,11 +53,6 @@ Ensure the following tools are installed:
    Navigate to the `backend` folder:
    ```bash
    cd server
-   ```
-   
-   Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
    ```
    
    Run the Flask backend:
