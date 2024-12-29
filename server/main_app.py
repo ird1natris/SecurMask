@@ -37,7 +37,7 @@ race_counter = 1  # Counter for pseudonymized values
 IC_KEYWORDS = ['ic', 'identification', 'id', 'passport', 'ssn', 'personal id', 'national id', 'ic number', 'IC', 'mykad']
 
 # Define column header keywords for email
-EMAIL_KEYWORDS = ['email', 'email address', 'email_id', 'contact', 'e-mail', 'email address', 'contact email', 'emel']
+EMAIL_KEYWORDS = ['email', 'email_id', 'contact', 'e-mail', 'contact email', 'emel']
 
 # Define column header keywords for address
 ADDRESS_KEYWORDS = ['address', 'home address', 'residence', 'location', 'street', 'city', 'place of residence', 'alamat', 'rumah']
@@ -55,7 +55,7 @@ PHONE_KEYWORDS = ['phone', 'mobile', 'contact', 'telephone', 'cell', 'telefon', 
 PLACE_OF_BIRTH_KEYWORDS = ['place', 'origin', 'tempat', 'state']
 
 # Define column header keywords for Birth Date
-BIRTH_DATE_KEYWORDS = ['date', 'dob', 'b-day', 'd.o.b.', 'tarikh']
+BIRTH_DATE_KEYWORDS = ['date', 'dob', 'b-day', 'd.o.b.', 'tarikh', 'birth date','birthdate']
 
 GENDER_KEYWORDS = ['gender', 'sex', 'jenis kelamin', 'j.k.', 'sex/gender', 'gen', 'jantina']
 
@@ -71,7 +71,7 @@ RACE_KEYWORDS = ['race', 'ethnicity', 'ethnic group', 'race/ethnicity', 'bangsa'
 # Define column header keywords for Race
 SALARY_KEYWORDS = ['salary', 'income', 'gaji', 'pendapatan', 'source']
 
-CREDIT_CARD_KEYWORDS = ['credit card', 'cc', 'kredit', 'debit']
+CREDIT_CARD_KEYWORDS = ['credit card', 'cc_number', 'kredit', 'debit']
 
 # Path constants
 #UPLOAD_FOLDER_ORIGINAL = "uploads/original"  # Adjust as necessary
@@ -88,14 +88,12 @@ def preprocess_column_name(column_name):
     return column_name.lower()
 ####################################################################################
 #CIPHER DATA BEFORE MASKING
-# Cipher for Date (Birth Date)
 from datetime import datetime, timedelta
 
 def convert_excel_date(excel_date):
     """ Convert Excel serial date to Python datetime object. """
     # Excel date starts from 1900-01-01, but Excel incorrectly treats 1900 as a leap year.
     excel_epoch = datetime(1900, 1, 1)
-    # Adjust for Excel's leap year bug (subtracting 2 days)
     return excel_epoch + timedelta(days=excel_date - 2)
 
 def cipher_date(date_value):
@@ -107,7 +105,7 @@ def cipher_date(date_value):
 
         elif isinstance(date_value, str):
             # Handle string dates, attempt parsing with multiple formats
-            formats = ["%d/%m/%Y", "%m/%d/%Y"]  # Common formats
+            formats = ["%d/%m/%Y", "%m/%d/%Y", "%Y/%m/%d", "%Y-%m-%d"]  # Common formats
             for fmt in formats:
                 try:
                     date_value = datetime.strptime(date_value, fmt)
@@ -128,6 +126,7 @@ def cipher_date(date_value):
     
     except Exception as e:
         return f"Error masking date: {e}"
+
 
 # Cipher for Phone Number
 def cipher_phone_number(phone_number):
@@ -245,28 +244,44 @@ def cipher_email(email):
         return f"Error cipher email: {e}"
 
 
-# Cipher for Credit Card Number
 def cipher_credit_card(cc_number):
-    """ Cipher the credit card number by keeping first 6 and last 4 digits, 
-        and replacing the middle digits with random values. """
+    """ Cipher the credit card number by keeping the first 6 and last 4 digits,
+        and replacing the middle digits with transformed values. """
     try:
+        # Convert scientific notation to a full integer if input is float-like
+        if isinstance(cc_number, (float, int)):
+            cc_number = f"{int(cc_number):d}"  # Convert to integer string
+        
+        # Ensure cc_number is a string
+        cc_number = str(cc_number).replace(" ", "").replace("-", "")  # Remove spaces/dashes
+        
+        # Validate that cc_number contains only digits
+        if not cc_number.isdigit():
+            raise ValueError("Credit card number must contain only digits.")
+        
+        # Validate length of credit card number
+        if len(cc_number) < 10:
+            raise ValueError("Credit card number is too short to process.")
+        
         # Get the last 4 digits of the credit card number
         last_4_digits = cc_number[-4:]
         
-        # Find the largest digit in the last 4 digits
-        largest_digit = max(int(digit) for digit in last_4_digits)
+        # Use the last digit of the last 4 digits for the ciphering transformation
+        key_digit = int(last_4_digits[-1])  # Take the last digit
         
         # Cipher the digits
-        ciphered_digits = [largest_digit]  # Start with the largest digit
+        ciphered_digits = [key_digit]  # Start with the key digit
         
         for digit in last_4_digits[:3]:  # Only for the first 3 digits
-            new_digit = (int(digit) + largest_digit) % 10  # Add and mod 10 if necessary
+            new_digit = (int(digit) + key_digit) % 10  # Add and mod 10 if necessary
             ciphered_digits.append(new_digit)
         
         # Return the ciphered last 4 digits as part of the original credit card number
         return cc_number[:-4] + ''.join(map(str, ciphered_digits))
+    
     except Exception as e:
         return f"Error masking credit card number: {e}"
+
 ###########################################################################################################
 #decipher techniques
 def decipher_date(date_value):
@@ -395,20 +410,48 @@ def decipher_email(ciphered_email, shift_amount=6):
 
 # Decipher for Credit Card Number
 def decipher_credit_card(cc_number):
-    """ Decipher the credit card number by reversing the middle digits with the original ones. """
+    """ Decipher the credit card number by reversing the transformation applied to the last 4 digits. """
     try:
-        # The last 4 digits should stay the same, just reverse the ciphered middle digits
-        last_4_digits = cc_number[-4:]
-        ciphered_digits = [int(digit) for digit in last_4_digits]
-        
-        # Reverse the transformation by subtracting the largest digit
-        largest_digit = max(ciphered_digits)
-        original_digits = [digit - largest_digit for digit in ciphered_digits]
-        
-        # Rebuild the credit card number with the original middle digits
-        return cc_number[:-4] + ''.join(map(str, original_digits))
+        # Convert scientific notation to a full integer if input is float-like
+        if isinstance(cc_number, (float, int)):
+            cc_number = f"{int(cc_number):d}"  # Convert to integer string
+
+        # Ensure cc_number is a string
+        cc_number = str(cc_number).replace(" ", "").replace("-", "")  # Remove spaces/dashes
+
+        # Validate that cc_number contains only digits
+        if not cc_number.isdigit():
+            raise ValueError("Credit card number must contain only digits.")
+
+        # Validate length of credit card number
+        if len(cc_number) < 10:
+            raise ValueError("Credit card number is too short to process.")
+
+        # Extract parts
+        first_part = cc_number[:-4]
+        ciphered_last_4 = cc_number[-4:]
+
+        # Convert the ciphered last 4 digits to integers
+        ciphered_digits = [int(digit) for digit in ciphered_last_4]
+
+        # The key digit used in ciphering is the first digit of the ciphered block
+        key_digit = ciphered_digits[0]
+
+        # Reverse the transformation to get the original last 4 digits
+        original_digits = [
+            (digit - key_digit + 10) % 10 for digit in ciphered_digits[1:]
+        ]
+
+        # Add back the key digit as the last digit
+        original_last_4 = ''.join(map(str, original_digits)) + str(key_digit)
+
+        # Reconstruct the full original credit card number
+        return first_part + original_last_4
+
     except Exception as e:
         return f"Error deciphering credit card number: {e}"
+
+
 ##########################################################################################################
 #Masking Rule 
 
