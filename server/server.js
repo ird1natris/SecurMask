@@ -35,12 +35,15 @@ app.use(
 );
 app.use(cookieParser());
 
+// Determine the database configuration based on an environment variable
+const isPartnerEnvironment = process.env.USE_PARTNER_DB === 'true';
+
 // MySQL Connection Setup
 const db = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: process.env.DB_PASSWORD,
-    database: 'user_management',
+    host: isPartnerEnvironment ? process.env.PARTNER_DB_HOST : process.env.DB_HOST,
+    user: isPartnerEnvironment ? process.env.PARTNER_DB_USER : process.env.DB_USER,
+    password: isPartnerEnvironment ? process.env.PARTNER_DB_PASS : process.env.DB_PASS,
+    database: isPartnerEnvironment ? process.env.PARTNER_DB_NAME : process.env.DB_NAME,
 });
 
 // Connect to the Database

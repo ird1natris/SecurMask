@@ -1,6 +1,6 @@
 # SecurMask: Fortifying Data Privacy With Intelligent Masking
 
-**SecurMask** is a web application designed to securely mask sensitive data in .csv and .xlsx files. With a sleek React frontend and a dual backend powered by both Node.js and Flask, the app ensures a seamless and secure data masking experience.
+**SecurMask** is a web application designed to securely mask sensitive data and unmask masked data in .csv and .xlsx files. With a sleek React frontend and a dual backend powered by both Node.js and Flask, the app ensures a seamless and secure data masking and unmasking experience.
 
 ## Features
 
@@ -39,7 +39,7 @@ Ensure the following tools are installed:
 - **Node.js 14.x or later** (for the frontend and Node.js backend)
 - **Python 3.8 or later** (for the Flask backend)
 - **pip** (Python package manager)
-- **npm** or **yarn**
+- **npm**
 
 ## Installation
 
@@ -52,34 +52,24 @@ Ensure the following tools are installed:
    
    Navigate to the `backend` folder:
    ```bash
-   cd backend
-   ```
-   
-   Install the required Python packages:
-   ```bash
-   pip install -r requirements.txt
+   cd server
    ```
    
    Run the Flask backend:
    ```bash
-   python app.py  
+   npm start  
    ```
 
 3. **Set Up the Frontend**
-
-   Navigate to the `frontend` folder:
-   ```bash
-   cd frontend
-   ```
 
    Install the dependencies:
    ```bash
    npm install  
    ```
 
-   Start the React development server:
+   Start the React client server:
    ```bash
-   npm start    
+   npm run dev    
    ```
   
 4. **Access the Application**
@@ -88,16 +78,8 @@ Ensure the following tools are installed:
 - **Node.js API**: http://localhost:5000
 - **Flask API**: http://localhost:5001
 
-## Usage
-
-1. **Upload File**: Click "Choose File" to upload a .csv or .xlsx file.
-2. **Select Columns**: Pick specific columns to mask or select all columns.
-3. **Mask Data**: Click "Mask Data" to process the file.
-4. **Download**: Download the masked file once processing is complete.
-
 ## Future Enhancements
 
-- Implement a unified backend API (Node.js + Flask integration).
 - Expand support for other file formats (e.g., .json, .xml).
 - Incorporate machine learning for intelligent data masking patterns.
 
@@ -115,10 +97,10 @@ cd SecurMask
 ```bash
 git add .  
 git commit -m "[TYPE] Your commit message"  
-git push origin main  
+git push origin master  
 ```
 
 4. Ensure to pull any updates before working further:
 ```bash
-git pull origin main  
+git pull origin master  
 ```
