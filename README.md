@@ -83,16 +83,8 @@ Ensure the following tools are installed:
 - **Node.js API**: http://localhost:5000
 - **Flask API**: http://localhost:5001
 
-## Usage
-
-1. **Upload File**: Click "Choose File" to upload a .csv or .xlsx file.
-2. **Select Columns**: Pick specific columns to mask or select all columns.
-3. **Mask Data**: Click "Mask Data" to process the file.
-4. **Download**: Download the masked file once processing is complete.
-
 ## Future Enhancements
 
-- Implement a unified backend API (Node.js + Flask integration).
 - Expand support for other file formats (e.g., .json, .xml).
 - Incorporate machine learning for intelligent data masking patterns.
 
