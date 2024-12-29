@@ -115,10 +115,10 @@ cd SecurMask
 ```bash
 git add .  
 git commit -m "[TYPE] Your commit message"  
-git push origin main  
+git push origin master  
 ```
 
 4. Ensure to pull any updates before working further:
 ```bash
-git pull origin main  
+git pull origin master  
 ```
