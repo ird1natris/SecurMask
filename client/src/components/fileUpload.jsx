@@ -143,7 +143,14 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
         // Before proceeding to password validation, detect columns
         const formData = new FormData();
         formData.append('file', selectedFiles[0]); // Only send the first file for column detection
-
+        Swal.fire({
+            title: 'Detecting Columns...',
+            text: 'Please wait while we process your file.',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
         try {
             const response = await fetch("http://127.0.0.1:5000/detect_columns", {
                 method: "POST",
@@ -151,6 +158,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
             });
 
             const data = await response.json();
+            Swal.close();
             if (data.columns) {
                 // Set the detected columns
                 setColumns(data.columns);
@@ -215,6 +223,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
         setDecryptionKey(password);  // Set the decryption key after validation
         setShowPasswordValidation(false);  // Hide the password validation form
 
+
         // Proceed with the file upload
         const uploadFiles = async () => {
             const selectedFiles = Array.from(document.querySelector('input[type="file"]').files);
@@ -237,7 +246,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                     Swal.fire({
                         icon: "success",
                         title: "Upload Completed",
-                        text: `${fileName} has been uploaded successfully! Note that your file that has not been mask will be remove in 1 hour time.`,
+                        text: `${fileName} has been uploaded successfully! Note that your file that has not been mask will be remove in 1 hour time. Navigate to folders to view you file`,
                     });
                     const fileData = {
                         id: fileId,
@@ -269,7 +278,9 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
         };
 
         uploadFiles();
-        navigate("/folder", { state: { updatedFiles: updatedFiles } });
+        //navigate("/folder", { state: { localFiles } });
+
+
         // Start uploading the files after the password is validated
     };
 

@@ -2,7 +2,7 @@ import React, { useState } from 'react'; // Import useState
 import Sidebar from '../components/sideBar'; // Ensure correct import
 import Navbar from '../components/Navbar'; // Ensure correct import
 import DynamicTabs from '../components/DynamicTabs'; // Ensure correct import
-import FileList from '../components/FileList';;
+
 const Data = ({onLogout}) => {
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);

@@ -702,7 +702,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
             const processedData = response.data; // Processed data from Python app
             const processedDataBuffer = Buffer.from(processedData.replace(/\r\n/g, "\n"), "utf-8");
-
+            //console.log("processedData:",processedData);
             // Encrypt the processed data
             const hashedKey = hashKey(userKey);
             const iv = crypto.randomBytes(16);
@@ -769,7 +769,7 @@ app.post("/mask", async (req, res) => {
             console.error("Decryption failed:", err);
             return res.status(400).send({ message: "Invalid decryption key" });
         }
-        console.log("DecryptedContent", decryptedContent);
+        console.log("DecryptedContent to mask", decryptedContent);
         try {
             // Send the decrypted content to the Flask API
             const flaskResponse = await axios.post(
@@ -780,8 +780,10 @@ app.post("/mask", async (req, res) => {
                 },
                 { headers: { "Content-Type": "application/json" } }
             );
+            //console.log("Flask Response:", flaskResponse.data);
 
             const maskedContent = flaskResponse.data.maskedContent; // Assume Flask sends this key
+            console.log("MaskedContent", maskedContent);
             const readableStream = new stream.Readable();
             readableStream.push(maskedContent);
             readableStream.push(null);
@@ -996,7 +998,7 @@ app.post("/file", (req, res) => {
             return res.status(400).send({ message: "Decrypted content is empty" });
         }
 
-        console.log("Decrypted content:", decryptedContent);
+        console.log("Decrypted content to unmask:", decryptedContent);
         try {
             const form = new FormData();
             form.append("file", Buffer.from(decryptedContent), {
@@ -1014,7 +1016,7 @@ app.post("/file", (req, res) => {
                 return res.status(500).send({ message: "Failed to receive valid data from Flask" });
             }
 
-            console.log("Deciphered data:", decipherData);
+            //console.log("Deciphered data:", decipherData);
             res.send({ content: decipherData, message: "Successfully unmasked the data" }); // Send Flask's response back to the client
         } catch (axiosError) {
             console.error("Error sending data to Flask:", axiosError.message);

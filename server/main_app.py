@@ -130,27 +130,31 @@ def cipher_date(date_value):
 
 # Cipher for Phone Number
 def cipher_phone_number(phone_number):
-    """ Cipher the phone number by modifying the last 4 digits. """
+    """Cipher the phone number by modifying the last 4 digits."""
     try:
-        # Split the phone number into parts
-        parts = phone_number.split('-')
-        main_part, last_part = parts[0], parts[1]
+        # Normalize the phone number to a consistent format with only digits and hyphens
+        phone_number = re.sub(r"[^\d-]", "", phone_number)  # Remove spaces or other characters
+        
+        # Split the phone number into main part and last part
+        parts = phone_number.rsplit('-', maxsplit=1)
+        main_part, last_part = parts[0], parts[1] if len(parts) > 1 else ""
+        
+        if len(last_part) < 4:
+            return f"Error: Last part of phone number must have at least 4 digits"
         
         # Extract the last 4 digits
         last_4_digits = [int(digit) for digit in last_part[-4:]]
         
-        # Take the last digit of the last 4 digits and put it in front
-        modified_digits = [last_4_digits[-1]]  # Place the last digit as the first
-        # Add 4 to the first three digits (mod 10) and append them
+        # Cipher the last 4 digits
+        modified_digits = [last_4_digits[-1]]  # Move the last digit to the front
         for digit in last_4_digits[:3]:
-            modified_digits.append((digit + 4) % 10)
+            modified_digits.append((digit + 4) % 10)  # Add 4 (mod 10)
         
         # Replace the last 4 digits in the phone number
         new_last_part = last_part[:-4] + ''.join(map(str, modified_digits))
         return f"{main_part}-{new_last_part}"
     except Exception as e:
         return f"Error cipher phone number: {e}"
-
 
 import random
 import string
@@ -185,17 +189,13 @@ def cipher_name(name, shift_amount=5):
 def cipher_numeric(id_number):
     try:
         # Ensure the id_number is treated as a string
-        id_number = str(id_number)
-        
-        # Remove spaces and hyphens from the input
-        id_number = id_number.replace(" ", "").replace("-", "")
-        
+        id_number = str(id_number).replace(" ", "").replace("-", "")
+
         def modify_four_digits(four_digits):
             # Extract last digit and put it first, modify first three digits by adding 5
             last_digit = four_digits[-1]
             modified_digits = [last_digit]  # Start with the last digit
             for digit in four_digits[:3]:
-                # Add 5 to each digit, and apply mod 10 if needed
                 new_digit = (int(digit) + 5) % 10
                 modified_digits.append(new_digit)
             return ''.join(map(str, modified_digits))
@@ -205,18 +205,17 @@ def cipher_numeric(id_number):
         middle_digits = id_number[4:-4]
         last_4_digits = id_number[-4:]
     
-        # Modify the first 4 digits of the ID number
+        # Modify the first and last 4 digits of the ID number
         new_first_4 = modify_four_digits(first_4_digits)
-
-        # Modify the last 4 digits of the ID number
         new_last_4 = modify_four_digits(last_4_digits)
     
         # Combine the modified sections back together
         ciphered_id = new_first_4 + middle_digits + new_last_4
     
-        return ciphered_id
+        return str(ciphered_id)  # Return as a string
     except Exception as e:
         return f"Error cipher id number: {e}"
+
 
 
 
@@ -251,6 +250,24 @@ def cipher_email(email):
         return f"{ciphered_name}@{email.split('@')[1]}"
     except Exception as e:
         return f"Error cipher email: {e}"
+
+def preprocess_credit_card_number(cc_number):
+    """ Clean and format the credit card number. """
+    try:
+        # Handle scientific notation if input is float-like
+        if isinstance(cc_number, (float, int)):
+            cc_number = f"{int(cc_number):d}"  # Convert to integer string
+        
+        # Ensure cc_number is a string
+        cc_number = str(cc_number).replace(" ", "").replace("-", "")  # Remove spaces/dashes
+        
+        # Validate that cc_number contains only digits
+        if not cc_number.isdigit():
+            raise ValueError("Credit card number must contain only digits.")
+        
+        return cc_number
+    except Exception as e:
+        return f"Error preprocessing credit card number: {e}"
 
 
 def cipher_credit_card(cc_number):
@@ -316,21 +333,25 @@ def decipher_date(date_value):
 
 # Decipher for Phone Number
 def decipher_phone_number(phone_number):
-    """ Decipher the phone number by reversing the cipher. """
+    """Decipher the phone number by reversing the cipher."""
     try:
-        # Split the phone number into parts
-        parts = phone_number.split('-')
-        main_part, last_part = parts[0], parts[1]
+        # Normalize the phone number to a consistent format with only digits and hyphens
+        phone_number = re.sub(r"[^\d-]", "", phone_number)  # Remove spaces or other characters
+        
+        # Split the phone number into main part and last part
+        parts = phone_number.rsplit('-', maxsplit=1)
+        main_part, last_part = parts[0], parts[1] if len(parts) > 1 else ""
+        
+        if len(last_part) < 4:
+            return f"Error: Last part of phone number must have at least 4 digits"
         
         # Extract the last 4 digits
         last_4_digits = [int(digit) for digit in last_part[-4:]]
         
-        # Reverse the cipher by putting the first digit (which was last) back to the last position
+        # Decipher the last 4 digits
         modified_digits = last_4_digits[1:]  # Get the first three digits
-        # Subtract 4 from the first three digits (mod 10)
-        modified_digits = [(digit - 4) % 10 for digit in modified_digits]
-        # Add the original first digit (which was moved to the front) to the end
-        modified_digits.append(last_4_digits[0])
+        modified_digits = [(digit - 4) % 10 for digit in modified_digits]  # Subtract 4 (mod 10)
+        modified_digits.append(last_4_digits[0])  # Move the first digit back to the end
         
         # Replace the last 4 digits in the phone number
         new_last_part = last_part[:-4] + ''.join(map(str, modified_digits))
@@ -366,35 +387,29 @@ def decipher_numeric(id_number):
     try:
         # Ensure the id_number is treated as a string
         id_number = str(id_number)
-        
+
         def modify_four_digits(four_digits):
             # Extract first digit and put it last, modify first three digits by subtracting 5
             first_digit = four_digits[0]
-            modified_digits = four_digits[1:]  # Start with the rest of the digits
+            modified_digits = list(four_digits[1:])  # Start with the rest of the digits
             for i in range(3):
-                # Subtract 5 from each digit, and apply mod 10 if needed
                 new_digit = (int(modified_digits[i]) - 5) % 10
                 modified_digits[i] = str(new_digit)
             return ''.join(modified_digits) + first_digit
 
-        # Remove spaces and hyphens from the input
-        #id_number = id_number.replace(" ", "").replace("-", "")
-        
         # Split the ID number into sections
         first_4_digits = id_number[:4]
         middle_digits = id_number[4:-4]
         last_4_digits = id_number[-4:]
     
-        # Modify the first 4 digits of the ID number
+        # Modify the first and last 4 digits of the ID number
         new_first_4 = modify_four_digits(list(first_4_digits))
-
-        # Modify the last 4 digits of the ID number
         new_last_4 = modify_four_digits(list(last_4_digits))
     
         # Combine the modified sections back together
         deciphered_id = new_first_4 + middle_digits + new_last_4
     
-        return deciphered_id
+        return str(deciphered_id)  # Return as a string
     except Exception as e:
         return f"Error decipher id number: {e}"
 
@@ -717,10 +732,11 @@ def cipher_data(value, column_name=None):
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in EMAIL_KEYWORDS):
             return cipher_email(value)
         
-        # Fuzzy matching to detect credit card-related columns
+        # Preprocess the value for credit card columns
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in CREDIT_CARD_KEYWORDS):
+            value = preprocess_credit_card_number(value)  # Preprocess CC number
             return cipher_credit_card(value)
-
+        
     return value  # Return original value if no match
 
 def decipher_data(value, column_name=None):
@@ -869,6 +885,7 @@ def apply_masking_rules():
         data = request.get_json()
         decrypted_content = data.get("content")
         columns_to_mask = data.get("columnsToMask")  # Get columnsToMask from request
+        print("Decrypt Content Receive from Server:", decrypted_content)
 
         # Log the columnsToMask for debugging
         print("Received columnsToMask:", columns_to_mask)
@@ -903,8 +920,8 @@ def apply_masking_rules():
                             fuzz.partial_ratio(preprocess_column_name(column_name), keyword) > 80
                             for keyword in (
                                 BIRTH_DATE_KEYWORDS
-                                + EMAIL_KEYWORDS
                                 + IC_KEYWORDS
+                                + EMAIL_KEYWORDS
                                 + CREDIT_CARD_KEYWORDS
                                 + NAME_KEYWORDS
                                 + PHONE_KEYWORDS
@@ -920,6 +937,7 @@ def apply_masking_rules():
 
         output_stream.seek(0)
         masked_content = output_stream.getvalue()
+        
         return jsonify({"maskedContent": masked_content})
 
     except Exception as e:
@@ -928,6 +946,18 @@ def apply_masking_rules():
 
 
 # Function to process uploaded file and mask the data
+def handle_scientific_notation(value):
+    """
+    Convert string representations of scientific notation to plain numeric strings.
+    """
+    try:
+        # Check if the value looks like scientific notation (e.g., "3.4539E+14")
+        if isinstance(value, str) and "E" in value.upper():
+            return str(int(float(value)))  # Convert scientific string to a plain integer string
+        return value  # Return as-is for non-scientific values
+    except ValueError:
+        return value  # Return original if conversion fails
+
 @main_app.route("/process_file", methods=["POST"])
 def process_file():
     file = request.files.get("file")
@@ -935,40 +965,37 @@ def process_file():
         return jsonify({"error": "No file uploaded or file format not supported"}), 400
 
     try:
-        # Read the file into memory (no saving to disk)
+        # Read the file into memory without saving to disk
         if file.filename.endswith('.csv'):
-            csv_data = file.read().decode("utf-8").replace('\r\n', '\n')  # Ensure all line breaks are '\n'
-            # Now use pandas to read the CSV string
+            csv_data = file.read().decode("utf-8").replace('\r\n', '\n')  # Normalize line breaks
             from io import StringIO
-            df = pd.read_csv(StringIO(csv_data))  # Read CSV directly from memory
+            df = pd.read_csv(StringIO(csv_data))  # Ensure all columns are read as strings
+
+            # Explicitly process columns to convert string scientific notation to plain numbers
+            df = df.applymap(lambda x: handle_scientific_notation(x))
         elif file.filename.endswith('.xlsx'):
             df = pd.read_excel(BytesIO(file.read()))  # Read Excel directly from memory
 
-        # Create a memory buffer to store the CSV data
-        output = io.StringIO()  # Define the output buffer before using it
+        # Create a memory buffer to store the processed CSV data
+        output = io.StringIO()
         csv_writer = csv.writer(output)
 
-        # Detect columns and apply transformations (you can use your ciphering functions here)
-        columns = df.columns.tolist()
+        # Write header
+        csv_writer.writerow(df.columns.tolist())
 
-        # Write the header row
-        csv_writer.writerow(columns)
-
-        # Process each row and apply the ciphering function
-        for index, row in df.iterrows():
-            processed_row = [cipher_data(row[col], col) for col in columns]
+        # Write processed rows
+        for _, row in df.iterrows():
+            processed_row = [cipher_data(row[col], col) for col in df.columns]
             csv_writer.writerow(processed_row)
 
-        # Get the CSV data from the memory buffer
-        csv_data = output.getvalue()
+        # Retrieve the processed CSV data from the memory buffer
+        csv_data = output.getvalue().replace('\r\n', '\n')  # Normalize line breaks
 
-        # Replace any remaining \r\n with \n after writing the CSV content
-        csv_data = csv_data.replace('\r\n', '\n')
+        # Log the processed data for debugging
+        main_app.logger.info(f"Processed CSV Data:\n{csv_data}")
+        print(f"Processed CSV Data:\n{csv_data}")  # Print to console
 
-        # Log the CSV data
-        main_app.logger.info(f"Processed CSV Data:\n{csv_data}")  # Logs the processed CSV data
-
-        # Return the CSV as a downloadable file response
+        # Return the processed file as a downloadable response
         return Response(
             csv_data,
             mimetype="text/csv",
@@ -977,23 +1004,34 @@ def process_file():
 
     except Exception as e:
         main_app.logger.error(f"Error processing file: {str(e)}")
+        print(f"Error processing file: {str(e)}")  # Print error to console
         return jsonify({"error": f"Error processing file: {e}"}), 500
 
 @main_app.route('/deProcessFile', methods=['POST'])
 def deProcessFile():
     file = request.files.get("file")
+    
     if not file or not allowed_file(file.filename):
+        main_app.logger.error("No file sent or unsupported file format")
         return jsonify({"error": "No file sent or file format not supported"}), 400
 
     try:
+        # Log the received file content for debugging
+        file_content = file.read()
+        main_app.logger.debug(f"Received file content (truncated): {file_content[:500]}")  # Log first 500 characters
+        file.seek(0)  # Reset file pointer for further processing
+
         # Process the file content based on the extension
         if file.filename.endswith('.csv'):
-            cipher_csv_data = file.read().decode("utf-8").replace('\r\n', '\n')
+            cipher_csv_data = file_content.decode("utf-8").replace('\r\n', '\n')
             from io import StringIO
-            df = pd.read_csv(StringIO(cipher_csv_data))  # Read CSV into a DataFrame
+            # Read CSV into a DataFrame, treating all columns as strings
+            df = pd.read_csv(StringIO(cipher_csv_data), dtype=str)
         elif file.filename.endswith('.xlsx'):
-            df = pd.read_excel(BytesIO(file.read()))  # Read Excel into a DataFrame
+            # Read Excel into a DataFrame, treating all columns as strings
+            df = pd.read_excel(BytesIO(file_content), dtype=str)
         else:
+            main_app.logger.error("Unsupported file format")
             return jsonify({"error": "Unsupported file format"}), 400
 
         # Transform and process the data (decipher each row)
@@ -1003,7 +1041,7 @@ def deProcessFile():
 
         for index, row in df.iterrows():
             # Process each column in the row by applying the decipher logic
-            processed_row = [decipher_data(row[col], col) for col in df.columns]
+            processed_row = [decipher_data(str(row[col]), col) for col in df.columns]
             main_app.logger.debug(f"Processed row {index + 1}: {processed_row}")  # Log each processed row
             csv_writer.writerow(processed_row)
 
@@ -1020,6 +1058,7 @@ def deProcessFile():
     except Exception as e:
         main_app.logger.error(f"Error processing cipher file: {str(e)}")
         return jsonify({"error": f"Error processing cipher file: {e}"}), 500
+
 
 
 # Start the Flask app

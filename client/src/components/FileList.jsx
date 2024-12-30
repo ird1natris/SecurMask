@@ -6,35 +6,31 @@ import PasswordValidation from './PasswordValidation';  // Import PasswordValida
 import { addFileToIndexedDB, getFilesFromIndexedDB, deleteFileFromIndexedDB, updateFileWithMaskedContent, fetchFile } from "../utils/indexedDBUtils";
 import Swal from "sweetalert2";
 import ExcelJS from 'exceljs';
-import { useLocation } from "react-router-dom";
+
 
 const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) => {
   const [localFiles, setLocalFiles] = useState([]);
   const [showPasswordValidation, setShowPasswordValidation] = useState(false);
   const [decryptionKey, setDecryptionKey] = useState('');
   const [columns, setColumns] = useState([]);
-  const location = useLocation();
-  const updatedFiles = location.state?.updatedFiles || [];
 
-  
+
+
+
 
   useEffect(() => {
-    if (updatedFiles.length > 0) {
-      setLocalFiles(updatedFiles); // Set local files if updatedFiles is available
-    } else {
-      const fetchFiles = async () => {
-        try {
-          const files = await getFilesFromIndexedDB();
-          //console.log("Fetched files:", files);
-          setLocalFiles(files); // Update the state to reflect the fetched files
-        } catch (error) {
-          console.error("Error fetching files from IndexedDB:", error);
-        }
-      };
+    const fetchFiles = async () => {
+      try {
+        const files = await getFilesFromIndexedDB();
+        console.log("Fetched files:", files);
+        setLocalFiles(files); // Update the state to reflect the fetched files
+      } catch (error) {
+        console.error("Error fetching files from IndexedDB:", error);
+      }
+    };
 
-      fetchFiles();
-    }
-  }, [uploadedFiles, updatedFiles]); 
+    fetchFiles();
+  }, [uploadedFiles]);
 
 
 
@@ -120,6 +116,17 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
     const formData = new FormData();
     formData.append('file', selectedFiles[0]); // Only send the first file for column detection
 
+    // Show loading message while detecting columns
+    Swal.fire({
+      title: 'Detecting Columns...',
+      text: 'Please wait while we process your file.',
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      }
+    });
+
+
     try {
       const response = await fetch("http://127.0.0.1:5000/detect_columns", {
         method: "POST",
@@ -127,6 +134,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
       });
 
       const data = await response.json();
+      Swal.close();
       if (data.columns) {
         // Set the detected columns
         setColumns(data.columns);
@@ -397,11 +405,11 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
         <tbody>
           {localFiles.map((file, index) => (
             <tr key={file.id} className="bg-[#e3dee5]"><td className="p-15 text-center text-black border-2 border-white-300">{index + 1}</td><td className="p-15 text-center text-black border-2 border-white-300">{file.id}</td><td className="p-15 text-center text-black border-2 border-white-300">{file.name}</td><td className="p-15 text-center text-black border-2 border-white-300">{file.status}</td><td className="p-15 text-center text-black border-2 border-white-300">
-                <div className="flex space-x-7 items-center justify-center">
-                  <SquareArrowOutUpRight onClick={() => handleViewFile(file)} color="blue" />
-                  <Trash2 onClick={() => handleDeleteCell(file)} color="red" />
-                </div>
-              </td>
+              <div className="flex space-x-7 items-center justify-center">
+                <SquareArrowOutUpRight onClick={() => handleViewFile(file)} color="blue" />
+                <Trash2 onClick={() => handleDeleteCell(file)} color="red" />
+              </div>
+            </td>
             </tr>
           ))}
         </tbody>
