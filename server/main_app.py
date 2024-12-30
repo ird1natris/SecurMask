@@ -184,6 +184,12 @@ def cipher_name(name, shift_amount=5):
 # Cipher for IC (Identity Card Number)
 def cipher_numeric(id_number):
     try:
+        # Ensure the id_number is treated as a string
+        id_number = str(id_number)
+        
+        # Remove spaces and hyphens from the input
+        id_number = id_number.replace(" ", "").replace("-", "")
+        
         def modify_four_digits(four_digits):
             # Extract last digit and put it first, modify first three digits by adding 5
             last_digit = four_digits[-1]
@@ -194,21 +200,24 @@ def cipher_numeric(id_number):
                 modified_digits.append(new_digit)
             return ''.join(map(str, modified_digits))
         
-        parts = id_number.split('-')
+        # Split the ID number into sections
+        first_4_digits = id_number[:4]
+        middle_digits = id_number[4:-4]
+        last_4_digits = id_number[-4:]
     
-        # Modify the first 4 digits of the id number
-        first_4_digits = parts[0][:4]
+        # Modify the first 4 digits of the ID number
         new_first_4 = modify_four_digits(first_4_digits)
-        parts[0] = new_first_4 + parts[0][4:]
 
-        # Modify the last 4 digits of the id number
-        last_4_digits = parts[-1][-4:]
+        # Modify the last 4 digits of the ID number
         new_last_4 = modify_four_digits(last_4_digits)
-        parts[-1] = parts[-1][:-4] + new_last_4
     
-        return '-'.join(parts)
+        # Combine the modified sections back together
+        ciphered_id = new_first_4 + middle_digits + new_last_4
+    
+        return ciphered_id
     except Exception as e:
         return f"Error cipher id number: {e}"
+
 
 
 
@@ -355,6 +364,9 @@ def decipher_name(ciphered_name, shift_amount=5):
 # Decipher for IC (Identity Card Number)
 def decipher_numeric(id_number):
     try:
+        # Ensure the id_number is treated as a string
+        id_number = str(id_number)
+        
         def modify_four_digits(four_digits):
             # Extract first digit and put it last, modify first three digits by subtracting 5
             first_digit = four_digits[0]
@@ -364,20 +376,25 @@ def decipher_numeric(id_number):
                 new_digit = (int(modified_digits[i]) - 5) % 10
                 modified_digits[i] = str(new_digit)
             return ''.join(modified_digits) + first_digit
-        
-        parts = id_number.split('-')
-    
-        # Modify the first 4 digits of the id number
-        first_4_digits = parts[0][:4]
-        new_first_4 = modify_four_digits(list(first_4_digits))
-        parts[0] = new_first_4 + parts[0][4:]
 
-        # Modify the last 4 digits of the id number
-        last_4_digits = parts[-1][-4:]
-        new_last_4 = modify_four_digits(list(last_4_digits))
-        parts[-1] = parts[-1][:-4] + new_last_4
+        # Remove spaces and hyphens from the input
+        #id_number = id_number.replace(" ", "").replace("-", "")
+        
+        # Split the ID number into sections
+        first_4_digits = id_number[:4]
+        middle_digits = id_number[4:-4]
+        last_4_digits = id_number[-4:]
     
-        return '-'.join(parts)
+        # Modify the first 4 digits of the ID number
+        new_first_4 = modify_four_digits(list(first_4_digits))
+
+        # Modify the last 4 digits of the ID number
+        new_last_4 = modify_four_digits(list(last_4_digits))
+    
+        # Combine the modified sections back together
+        deciphered_id = new_first_4 + middle_digits + new_last_4
+    
+        return deciphered_id
     except Exception as e:
         return f"Error decipher id number: {e}"
 
