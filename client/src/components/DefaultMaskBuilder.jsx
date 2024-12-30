@@ -200,14 +200,7 @@ const DefaultMaskBuilder = ({ isOpen, onClose, fileId, onMaskedUpdate, HandleMas
                 </div>
             )}
 
-            {maskedContent && (
-                <FileContent
-                    fileName={fileName}
-                    fileData={maskedContent}
-                    fileId={fileId}
-                    onMaskedUpdate={onMaskedUpdate}
-                />
-            )}
+            
 
             <DecryptionKeyModal
                 isOpen={showDecryptionModal}
