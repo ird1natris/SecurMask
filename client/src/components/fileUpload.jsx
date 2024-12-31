@@ -145,7 +145,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
         formData.append('file', selectedFiles[0]); // Only send the first file for column detection
         Swal.fire({
             title: 'Detecting Columns...',
-            text: 'Please wait while we process your file.',
+            text: 'We are processing your file. It might take a while...',
             allowOutsideClick: false,
             didOpen: () => {
                 Swal.showLoading();
@@ -356,7 +356,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                     height: '314.895px',
                     flexShrink: 0,
                     border: '1.075px solid #BB93EF',
-                    backgroundColor: '#782BDD',
+                    backgroundColor: '#332C81',
                 }}
             >
                 <FolderLock size={68} color="#FFFFFF" />
@@ -397,7 +397,7 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                     height: '314.895px',
                     flexShrink: 0,
                     border: '1.075px solid #BB93EF',
-                    backgroundColor: '#782BDD',
+                    backgroundColor: '#332C81',
                 }}
             >
                 <FolderKey size={68} color="#FFFFFF" />

@@ -16,7 +16,7 @@ import infocircle from './info-circle.png';
 import loginimage from './Login_image.png';
 import Vector from './Vector238.png';
 import google from './google.png';
-import Landing from './landings.png';
+import Landing from './Landing.png';
 
 
 

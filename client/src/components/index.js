@@ -1,6 +1,6 @@
 import Navbar from './Navbar';
 import Hero from './Hero';
-import Button from './Button';
+import Detail from './Detail';
 import Sidebar from './sideBar';
 import Fileupload from './fileUpload';
 import DynamicTabs from './DynamicTabs';
@@ -12,10 +12,11 @@ import CustomMaskBuilder from './CustomMaskBuilder';
 import PasswordValidation from './PasswordValidation';
 import DecryptionKeyModal from './DecryptionKeyModal';
 import OtpModal from './OtpModal';
+import Statistics from './Statistics';
 export{
     Navbar,
     Hero,
-    Button,
+    Detail,
     Sidebar,
     Fileupload,
     DynamicTabs,
@@ -27,6 +28,7 @@ export{
     PasswordValidation,
     DecryptionKeyModal,
     OtpModal,
+    Statistics,
 
     
 };

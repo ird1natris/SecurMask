@@ -208,10 +208,11 @@ const Login = ({ onLoginSuccess }) => {
             >
               Register
             </button>
-            <a href="/contact" className="text-[#9695b9] hover:underline">Do you need help? Contact us.</a>
+            <a href="mailto:support@example.com?subject=Help%20Request&body=Hello,%20I%20need%20help%20with..." className="text-[#9695b9] hover:underline">Do you need help? Contact us.</a>
+
             <div className="flex items-center mt-4 text-[#9695b9]">
               <img src={infocircle} className="mr-2 w-[20px] h-[20px]" alt="Info Icon" />
-              <span className="text-sm">support@SecureMask.com</span>
+              
             </div>
           </div>
         </div>

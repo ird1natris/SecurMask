@@ -148,7 +148,7 @@ const SettingsPage = ({ onLogout }) => {
         setLoading(true);
 
         try {
-            // Example API request to update password (adjust according to your API)
+            // API request to update password 
             const response = await axios.post("http://localhost:8081/reset-password", {
                 email,
                 newPassword,
@@ -171,7 +171,7 @@ const SettingsPage = ({ onLogout }) => {
         } catch (error) {
 
 
-            // Properly handle the error response
+            //handle the error response
             if (error.response && error.response.data && error.response.data.Error) {
                 setError(error.response.data.Error);
             } else {
@@ -222,6 +222,38 @@ const SettingsPage = ({ onLogout }) => {
             return updatedUserInfo;
         })
     }
+
+    const maskData = (value, type) => {
+        if (!value) return "Not set"; // Default if no value exists
+
+        if (type === "email") {
+            const [localPart, domain] = value.split("@");
+            const maskedLocal = localPart.slice(0, 2) + "*".repeat(Math.max(0, localPart.length - 2));
+            return `${maskedLocal}@${domain}`;
+        }
+
+        if (type === "phone") {
+            return value.replace(/.(?=.{4})/g, "*"); // Mask all except the last 4 digits
+        }
+
+        if (type === "name") {
+            return value.charAt(0) + "*".repeat(Math.max(0, value.length - 1)); // Show only the first letter
+        }
+
+        return value; // For other fields, return as is
+    };
+    const handleEdit = () => {
+        setIsUpdate(true); // Enable edit mode
+        setUserInfo({
+            name: maskData(userInfo.name, "name"),
+            email: maskData(userInfo.email, "email"),
+            phone: maskData(userInfo.phone, "phone"),
+            job: userInfo.job, // No masking for job
+        });
+    };
+
+
+
     return (
         <div className="flex h-screen overflow-hidden bg-[#f4f4f4] w-full"
             style={{
@@ -307,9 +339,11 @@ const SettingsPage = ({ onLogout }) => {
                                                     className="w-full px-3 py-2 border rounded"
                                                     placeholder="Your Name"
                                                 />
-                                            ) : (<p>{userInfo.name || "Not set"}</p>)}
-
+                                            ) : (
+                                                <p>{maskData(userInfo.name, "name")}</p>
+                                            )}
                                         </div>
+
                                         <div>
                                             <label className="block text-sm font-medium text-gray-600 mb-1">Email</label>
                                             {isUpdate ? (
@@ -321,25 +355,28 @@ const SettingsPage = ({ onLogout }) => {
                                                     className="w-full px-3 py-2 border rounded"
                                                     placeholder="Your Email"
                                                 />
-                                            ) : (<p>{userInfo.email || "Not set"}</p>)}
-
+                                            ) : (
+                                                <p>{maskData(userInfo.email, "email")}</p>
+                                            )}
                                         </div>
+
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-1">Phone Number</label>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Phone</label>
                                             {isUpdate ? (
                                                 <input
-                                                    type="text"
+                                                    type="tel"
                                                     name="phone"
                                                     value={userInfo.phone}
                                                     onChange={handleUserProfileInput}
                                                     className="w-full px-3 py-2 border rounded"
-                                                    placeholder="Your Phone Number"
+                                                    placeholder="Your Phone"
                                                 />
-                                            ) : (<p>{userInfo.phone || "Not set"}</p>)}
-
+                                            ) : (
+                                                <p>{maskData(userInfo.phone, "phone")}</p>
+                                            )}
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-600 mb-1 ">Job</label>
+                                            <label className="block text-sm font-medium text-gray-600 mb-1">Job</label>
                                             {isUpdate ? (
                                                 <input
                                                     type="text"
@@ -349,17 +386,23 @@ const SettingsPage = ({ onLogout }) => {
                                                     className="w-full px-3 py-2 border rounded"
                                                     placeholder="Your Job"
                                                 />
-                                            ) : (<p>{userInfo.job || "Not set"}</p>)}
-
+                                            ) : (
+                                                <p>{userInfo.job || "Not set"}</p>
+                                            )}
                                         </div>
                                         <div>
-                                            {isUpdate ? (
-                                                <button className="ml-4 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 justify-items-end" onClick={handleSave}>Save</button>
-                                            ) : (<button className="ml-4 px-4 py-2 bg-blue-500 text-white rounded shadow hover:bg-blue-600 justify-items-end" onClick={() => setIsUpdate(true)}>Edit</button>)}
-
+                                            {!isUpdate ? (
+                                                <button onClick={handleEdit} className="px-4 py-2 bg-blue-500 text-white rounded">
+                                                    Edit
+                                                </button>
+                                            ) : (
+                                                <button onClick={handleSave} className="px-4 py-2 bg-green-500 text-white rounded">
+                                                    Save
+                                                </button>
+                                            )}
                                         </div>
-
                                     </div>
+
 
                                 </div>
                             )}

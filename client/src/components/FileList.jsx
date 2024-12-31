@@ -119,7 +119,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
     // Show loading message while detecting columns
     Swal.fire({
       title: 'Detecting Columns...',
-      text: 'Please wait while we process your file.',
+      text: 'We are processing your file. It might take a while...',
       allowOutsideClick: false,
       didOpen: () => {
         Swal.showLoading();

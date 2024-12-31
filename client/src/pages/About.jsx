@@ -50,7 +50,7 @@ const AboutUs = ({onLogout}) => {
                   By providing user-friendly tools and essential knowledge, SecurMask enhances data privacy and reduces vulnerability to cybercrimes, filling a crucial gap in Malaysia’s data protection landscape.
                 </p>
               </div>
-              <div className="flex justify-center pl-5 md:pl-20 ml-14">
+              <div className="flex justify-center pl-5 md:pl-20 ml-14 ">
                 <img
                   src={data_pic}
                   alt="Data Security"
