@@ -78,9 +78,7 @@ const Login = ({ onLoginSuccess }) => {
       return;
     }
   
-    console.log('email:', email);
-    console.log('otp:', otp);
-  
+
     // Send OTP for verification
     axios.post(
       'http://localhost:8081/verify-otp-login',

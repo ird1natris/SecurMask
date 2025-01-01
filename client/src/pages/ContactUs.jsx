@@ -26,12 +26,29 @@ const ContactUs = ({ onLogout }) => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Here you can handle the form submission logic (e.g., sending data to an API or email service)
-    // For now, just a success message
-    setFormStatus('Thank you for your message! We will get back to you soon.');
-    setFormData({ name: '', email: '', message: '' }); // Clear form after submission
+
+    try {
+      // Send form data to backend
+      const response = await fetch('http://localhost:8081/send-feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        setFormStatus('Thank you for your message! A confirmation email has been sent to your inbox.');
+        setFormData({ name: '', email: '', message: '' }); // Clear form after submission
+      } else {
+        setFormStatus('Failed to send your message. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error submitting the form:', error);
+      setFormStatus('An error occurred. Please try again later.');
+    }
   };
 
   return (
@@ -59,22 +76,19 @@ const ContactUs = ({ onLogout }) => {
         </div>
 
         {/* Centered Form Section */}
-        <div className="w-full max-w-lg p-6 bg-white rounded-lg shadow-lg ">
-          <h1 className="text-3xl font-bold text-primary mb-4 text-center">Contact Us</h1>
-          <p className="text-lg mb-8 text-gray-600 text-center">We'd love to hear from you! Please fill out the form below.</p>
+        <div className="w-full max-w-sm p-4 bg-white rounded-lg shadow-lg mt-24"> {/* Adjusted size */}
+          <h1 className="text-2xl font-bold text-primary mb-4 text-center">Contact Us</h1>
+          <p className="text-sm mb-6 text-gray-600 text-center">We'd love to hear from you! Fill out the form below.</p>
 
           {/* Contact Form */}
-          <form
-            className="flex flex-col space-y-4"
-            onSubmit={handleSubmit}
-          >
+          <form className="flex flex-col space-y-3" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-gray-700">Your Name</label>
+              <label htmlFor="name" className="block text-xs font-semibold text-gray-700">Your Name</label>
               <input
                 type="text"
                 id="name"
                 name="name"
-                className="w-full p-3 border border-gray-300 rounded-md"
+                className="w-full p-2 text-sm border border-gray-300 rounded-md"
                 value={formData.name}
                 onChange={handleInputChange}
                 required
@@ -82,12 +96,12 @@ const ContactUs = ({ onLogout }) => {
             </div>
 
             <div>
-              <label htmlFor="email" className="block text-sm font-semibold text-gray-700">Your Email</label>
+              <label htmlFor="email" className="block text-xs font-semibold text-gray-700">Your Email</label>
               <input
                 type="email"
                 id="email"
                 name="email"
-                className="w-full p-3 border border-gray-300 rounded-md"
+                className="w-full p-2 text-sm border border-gray-300 rounded-md"
                 value={formData.email}
                 onChange={handleInputChange}
                 required
@@ -95,12 +109,12 @@ const ContactUs = ({ onLogout }) => {
             </div>
 
             <div>
-              <label htmlFor="message" className="block text-sm font-semibold text-gray-700">Your Message</label>
+              <label htmlFor="message" className="block text-xs font-semibold text-gray-700">Your Message</label>
               <textarea
                 id="message"
                 name="message"
-                className="w-full p-3 border border-gray-300 rounded-md"
-                rows="6"
+                className="w-full p-2 text-sm border border-gray-300 rounded-md"
+                rows="4" // Reduced the height
                 value={formData.message}
                 onChange={handleInputChange}
                 required
@@ -109,7 +123,7 @@ const ContactUs = ({ onLogout }) => {
 
             <button
               type="submit"
-              className="w-full p-3 bg-primary text-white font-semibold rounded-md hover:bg-[#872DFB]"
+              className="w-full p-2 text-sm bg-primary text-white font-semibold rounded-md hover:bg-[#872DFB]"
             >
               Send Message
             </button>
@@ -117,7 +131,7 @@ const ContactUs = ({ onLogout }) => {
 
           {/* Success or Error message */}
           {formStatus && (
-            <div className="mt-6 p-4 text-center text-lg text-green-600">
+            <div className="mt-4 p-2 text-center text-sm text-green-600">
               <p>{formStatus}</p>
             </div>
           )}

@@ -1052,6 +1052,64 @@ app.post('/verify-captcha', async (req, res) => {
         res.status(500).json({ success: false, message: 'Error verifying CAPTCHA.' });
     }
 });
+app.delete("/deleteFile", async (req, res) => {
+    const { id } = req.body;
+    console.log("id:",id);
+  
+    if (!id) {
+      return res.status(400).json({ message: "File ID is required." });
+    }
+  
+    try {
+      // Define the SQL query
+      const queryFetch = "DELETE FROM user_files WHERE file_id = ?";
+  
+      // Execute the query with the provided file ID
+      db.query(queryFetch, [id], (err, results) => {
+        if (err) {
+          console.error("Error deleting file from database:", err);
+          return res.status(500).json({ message: "An error occurred while deleting the file." });
+        }
+  
+        // Check if any rows were affected
+        if (results.affectedRows === 0) {
+          return res.status(404).json({ message: "File not found." });
+        }
+  
+        res.status(200).json({ message: "File deleted successfully." });
+      });
+    } catch (error) {
+      console.error("Error deleting file from database:", error);
+      res.status(500).json({ message: "An error occurred while deleting the file." });
+    }
+  });
+  
+  
+  
+// POST route for sending email
+app.post('/send-feedback', async (req, res) => {
+    const { name, email, message } = req.body;
+  
+    try {
+      
+
+      // Email to the user
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: 'Thank You for Your Feedback!',
+        text: `Hello ${name},\n\nThank you for reaching out! We have received your message:\n\n"${message}"\n\nOur team will get back to you shortly.\n\nBest regards,\n[SecurMask]`,
+      };
+  
+      // Send Email
+      await transporter.sendMail(mailOptions);
+  
+      res.status(200).json({ message: 'Email sent successfully!' });
+    } catch (error) {
+      console.error('Error sending email:', error);
+      res.status(500).json({ error: 'Failed to send email' });
+    }
+  });
 
 
 // Logout Route

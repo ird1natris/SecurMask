@@ -132,6 +132,8 @@ def cipher_date(date_value):
 def cipher_phone_number(phone_number):
     """Cipher the phone number by modifying the last 4 digits."""
     try:
+        # Remove the '+' sign if it exists
+        phone_number = re.sub(r"\+", "", phone_number)
         # Normalize the phone number to a consistent format with only digits and hyphens
         phone_number = re.sub(r"[^\d-]", "", phone_number)  # Remove spaces or other characters
         

@@ -56,7 +56,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
       console.log("Fetched files:", files);
 
       const filesToRemove = files.filter(file => {
-        if (file.status === 'unmask' && file.uploadedAt) {
+        if (file.status === "unmask" && file.uploadedAt) {
           const fileUploadTime = new Date(file.uploadedAt).getTime();
           console.log("File upload time:", fileUploadTime);
           console.log("Time difference (ms):", currentTime - fileUploadTime);
@@ -69,44 +69,87 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
 
       for (const file of filesToRemove) {
         console.log(`Deleting file with ID: ${file.id}`);
-        await deleteFileFromIndexedDB(file.id);
-        console.log(`File with ID ${file.id} deleted.`);
+
+        try {
+          // Delete file from the server
+          const response = await fetch("http://localhost:8081/deleteFile", {
+            method: "DELETE",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: file.id }),
+          });
+
+          const result = await response.json();
+          console.log("Response from server:", result);
+
+          if (!response.ok) {
+            if (response.status === 404) {
+              console.warn(`File with ID ${file.id} not found on the server. Skipping.`);
+            } else {
+              throw new Error(result.message || "Failed to delete file from database");
+            }
+          } else {
+            console.log(`File with ID ${file.id} deleted from database.`);
+          }
+
+          // Delete file from IndexedDB
+          await deleteFileFromIndexedDB(file.id);
+          console.log(`File with ID ${file.id} deleted from IndexedDB.`);
+        } catch (error) {
+          console.error(`Error deleting file with ID ${file.id}:`, error);
+        }
       }
 
       const remainingFiles = files.filter(file => !filesToRemove.includes(file));
       setLocalFiles(remainingFiles);
       setUploadedFiles(remainingFiles);
       console.log("Remaining files:", remainingFiles);
-
     } catch (error) {
       console.error("Error cleaning up unmasked files:", error);
     }
   };
 
+
   useEffect(() => {
-    // Function to run cleanup after a delay of 5 minutes
-    const runCleanup = () => {
-      cleanUpUnmaskedFiles();
-      // Set up the next cleanup after 5 minutes
-      setTimeout(runCleanup, 60 * 60 * 1000); // 20 minutes = 300,000 milliseconds
+    let isCleaning = false; // Flag to track cleanup status
+
+    // Function to run cleanup at regular intervals
+    const runCleanup = async () => {
+      if (!isCleaning) {
+        isCleaning = true; // Mark cleanup as in progress
+        await cleanUpUnmaskedFiles();
+        isCleaning = false; // Mark cleanup as complete
+      }
     };
+
+    // Set an interval for cleanup every 20 minutes
+    const cleanupInterval = setInterval(runCleanup, 20 * 60 * 1000);
 
     // Initial call to start the cleanup process
     runCleanup();
 
-    // Cleanup function to stop the timeout when the component unmounts
+    // Cleanup function to clear the interval when the component unmounts
     return () => {
-      console.log("Cleanup timeout cleared.");
-      // Clear the timeout if the component unmounts (optional)
-      clearTimeout(runCleanup);
+      console.log("Cleanup interval cleared.");
+      clearInterval(cleanupInterval);
     };
   }, []);
 
   const handleFileUpload = async (event) => {
     const selectedFiles = Array.from(event.target.files);
-
+    const MAX_FILE_SIZE = 5 * 1024 * 1024;
     // Validate each selected file
     for (const file of selectedFiles) {
+      if (file.size > MAX_FILE_SIZE) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: `The file "${file.name}" exceeds the 5 MB size limit. Please upload a smaller file.`,
+        });
+        return; // Stop if any file exceeds the size limit
+      }
+
       if (!validateFiletype(file)) {
         return; // Stop if any file is invalid
       }
@@ -281,7 +324,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
             Papa.parse(e.target.result, {
               header: true,
               complete: (results) => {
-                console.log("Parsed unmasked data for file:", file.id, results.data);
+                //console.log("Parsed unmasked data for file:", file.id, results.data);
                 onTab(file.name, results.data, file.id, onMaskedUpdate, file.status, columns);
               },
             });
@@ -323,7 +366,7 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
               }
             });
 
-            console.log("Parsed Excel data for file:", file.id, jsonData);
+            //console.log("Parsed Excel data for file:", file.id, jsonData);
             onTab(file.name, jsonData, file.id, onMaskedUpdate, file.status, columns);
           };
           reader.readAsArrayBuffer(file.fileObject);
@@ -366,16 +409,57 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
 
   const handleDeleteCell = async (file) => {
     try {
-      await deleteFileFromIndexedDB(file.id);
-      const updatedFiles = localFiles.filter((f) => f.id !== file.id);
-      setLocalFiles(updatedFiles);
-      setUploadedFiles(updatedFiles);
-      onDelete(file.name);
+      // Send a request to the backend to delete the file from the database
+      const response = await fetch("http://localhost:8081/deleteFile", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: file.id }), // Send the file ID to the backend
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        // Remove the file from IndexedDB
+        await deleteFileFromIndexedDB(file.id);
+
+        // Update the local state
+        const updatedFiles = localFiles.filter((f) => f.id !== file.id);
+        setLocalFiles(updatedFiles);
+        setUploadedFiles(updatedFiles);
+
+        // Notify user about the successful deletion
+        Swal.fire({
+          icon: "success",
+          title: "File Deleted",
+          text: `The file "${file.name}" has been successfully deleted.`,
+          confirmButtonText: "OK",
+        });
+
+        // Trigger the delete callback
+        onDelete(file.name);
+      } else {
+        // Handle server-side errors
+        Swal.fire({
+          icon: "error",
+          title: "Failed to Delete",
+          text: result.message || "An error occurred while deleting the file.",
+          confirmButtonText: "OK",
+        });
+      }
     } catch (error) {
-      console.error("error deleting file from IndexedDB", error);
-      alert("Failed to delete the file.")
+      // Handle client-side errors
+      console.error("Error deleting file:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Failed to delete the file. Please try again later.",
+        confirmButtonText: "OK",
+      });
     }
   };
+
 
   // Close PasswordValidation component
   const handleClosePasswordValidation = () => {
@@ -384,13 +468,17 @@ const FileList = ({ uploadedFiles, setUploadedFiles, onTab, onDelete, newTab }) 
 
   return (
     <div className="text-center p-20">
-      <input
-        type="file"
-        accept="csv,xlsx"
-        multiple
-        onChange={handleFileUpload}
-        className="mb-4"
-      />
+      <div className="mb-4 flex items-center justify-center">
+        <label htmlFor="fileInput" className="mr-4 text-black font-bold">Select file to mask:</label>
+        <input
+          id="fileInput"
+          type="file"
+          accept="csv,xlsx"
+          multiple
+          onChange={handleFileUpload}
+          className="p-2 "
+        />
+      </div>
       {showPasswordValidation && <PasswordValidation onValidPassword={handleValidPassword} onClose={handleClosePasswordValidation} />}
       <table className="w-full mt-20px border-collapse">
         <thead>

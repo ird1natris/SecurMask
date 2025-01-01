@@ -133,8 +133,18 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
     const handleMaskUpload = async (event) => {
         const selectedFiles = Array.from(event.target.files);
 
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
         // Validate each selected file
         for (const file of selectedFiles) {
+            if (file.size > MAX_FILE_SIZE) {
+                Swal.fire({
+                    icon: "error",
+                    title: "File Too Large",
+                    text: `The file "${file.name}" exceeds the 5 MB size limit. Please upload a smaller file.`,
+                });
+                return; // Stop if any file exceeds the size limit
+            }
+
             if (!validateFiletype(file)) {
                 return; // Stop if any file is invalid
             }
@@ -289,8 +299,18 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
 
     const handleUnMaskUpload = async (event) => {
         const selectedFiles = Array.from(event.target.files);
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
         // Validate each selected file
         for (const file of selectedFiles) {
+            if (file.size > MAX_FILE_SIZE) {
+                Swal.fire({
+                    icon: "error",
+                    title: "File Too Large",
+                    text: `The file "${file.name}" exceeds the 5 MB size limit. Please upload a smaller file.`,
+                });
+                return; // Stop if any file exceeds the size limit
+            }
+
             if (!validateFiletype(file)) {
                 return; // Stop if any file is invalid
             }
@@ -301,9 +321,15 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                 const fileId = extractFileId(file.name);
 
                 if (!fileId) {
-                    console.error(`Invalid file name: ${file.name}. Unable to extract file ID.`);
+                    Swal.fire({
+                        icon: "error",
+                        title: "Invalid File",
+                        text: `The file ${file.name} is invalid. Unable to extract file ID.`,
+                        confirmButtonText: "OK",
+                    });
                     continue;
                 }
+
 
                 console.log(`Extracted content for ${file.name}:`, fileContent);
                 console.log(`Extracted file ID for ${file.name}: ${fileId}`);
@@ -322,7 +348,13 @@ const FileUpload = ({ uploadedFiles, setUploadedFiles }) => {
                     setSelectedFileId(fileId);  // Store the file ID
                     setIsModalVisible(true);  // Show the modal to ask for decryption key
                 } else {
-                    console.error(`File ${file.name} failed verification: ${result.message}`);
+                    Swal.fire({
+                        icon: "error",
+                        title: "File Verification Failed",
+                        text: `The file ${file.name} failed verification: ${result.message}`,
+                        confirmButtonText: "OK",
+                    });
+
                 }
             } catch (error) {
                 console.error(`Error processing file ${file.name}:`, error);
