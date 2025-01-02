@@ -73,6 +73,8 @@ SALARY_KEYWORDS = ['salary', 'income', 'gaji', 'pendapatan', 'source']
 
 CREDIT_CARD_KEYWORDS = ['credit card', 'cc_number', 'kredit', 'debit']
 
+IDENTIFICATION_NO_KEYWORDS=['matric', 'matric no', 'matric number']
+
 # Path constants
 #UPLOAD_FOLDER_ORIGINAL = "uploads/original"  # Adjust as necessary
 #PROCESSED_FOLDER = "uploads/processed"  # Adjust as necessary
@@ -252,6 +254,31 @@ def cipher_email(email):
         return f"{ciphered_name}@{email.split('@')[1]}"
     except Exception as e:
         return f"Error cipher email: {e}"
+    
+def cipher_Id(id_number):
+    """Cipher the student matriculation number by modifying the last 3 digits."""
+    try:
+        # Ensure the input contains only digits
+        id_number = re.sub(r"[^\d]", "", id_number)
+        
+        if len(id_number) < 3:
+            return "Error: Matric number must have at least 3 digits"
+        
+        # Extract the last 3 digits
+        last_3_digits = [int(digit) for digit in id_number[-3:]]
+        
+        # Rearrange: Take the last digit to the front
+        rearranged_digits = [last_3_digits[-1], last_3_digits[0], last_3_digits[1]]
+        
+        # Cipher only the first two digits of the rearranged digits
+        rearranged_digits[1] = (rearranged_digits[1] + 4) % 10  # Add 4 (mod 10)
+        rearranged_digits[2] = (rearranged_digits[2] + 4) % 10  # Add 4 (mod 10)
+        
+        # Combine with the unchanged part of the ID number
+        new_id_number = id_number[:-3] + ''.join(map(str, rearranged_digits))
+        return new_id_number
+    except Exception as e:
+        return f"Error ciphering matric number: {e}"
 
 def preprocess_credit_card_number(cc_number):
     """ Clean and format the credit card number. """
@@ -441,6 +468,31 @@ def decipher_email(ciphered_email, shift_amount=6):
         return f"{deciphered_name}@{ciphered_email.split('@')[1]}"
     except Exception as e:
         return f"Error deciphering email: {e}"
+    
+def decipher_Id(ciphered_id):
+    """Decipher the student matriculation number by reversing the cipher on the last 3 digits."""
+    try:
+        # Ensure the input contains only digits
+        ciphered_id = re.sub(r"[^\d]", "", ciphered_id)
+        
+        if len(ciphered_id) < 3:
+            return "Error: Matric number must have at least 3 digits"
+        
+        # Extract the last 3 digits
+        last_3_digits = [int(digit) for digit in ciphered_id[-3:]]
+        
+        # Reverse the rearrangement: Move the first digit to the last
+        original_order = [last_3_digits[1], last_3_digits[2], last_3_digits[0]]
+        
+        # Decipher the first two digits
+        original_order[0] = (original_order[0] - 4 + 10) % 10  # Subtract 4 (mod 10)
+        original_order[1] = (original_order[1] - 4 + 10) % 10  # Subtract 4 (mod 10)
+        
+        # Combine with the unchanged part of the ID number
+        original_id_number = ciphered_id[:-3] + ''.join(map(str, original_order))
+        return original_id_number
+    except Exception as e:
+        return f"Error deciphering matric number: {e}"
 
 # Decipher for Credit Card Number
 def decipher_credit_card(cc_number):
@@ -714,6 +766,7 @@ def cipher_data(value, column_name=None):
         column_name = preprocess_column_name(column_name)
         print(f"Processing column: {column_name} with value: {value}")  # Debugging line
 
+        
         # Fuzzy matching to detect Birth Date-related columns
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in BIRTH_DATE_KEYWORDS):
             return cipher_date(value)
@@ -730,6 +783,9 @@ def cipher_data(value, column_name=None):
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in IC_KEYWORDS):
             return cipher_numeric(value)
         
+        if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in IDENTIFICATION_NO_KEYWORDS):
+            return cipher_Id(value)
+        
         # Fuzzy matching to detect email-related columns
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in EMAIL_KEYWORDS):
             return cipher_email(value)
@@ -738,6 +794,8 @@ def cipher_data(value, column_name=None):
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in CREDIT_CARD_KEYWORDS):
             value = preprocess_credit_card_number(value)  # Preprocess CC number
             return cipher_credit_card(value)
+        
+        
         
     return value  # Return original value if no match
 
@@ -759,9 +817,13 @@ def decipher_data(value, column_name=None):
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in NAME_KEYWORDS):
             return decipher_name(value)
         
+        
         # Fuzzy matching to detect IC-related columns
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in IC_KEYWORDS):
             return decipher_numeric(value)
+        
+        if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in IDENTIFICATION_NO_KEYWORDS):
+            return decipher_Id(value)
         
         # Fuzzy matching to detect email-related columns
         if any(fuzz.partial_ratio(column_name, keyword) > 80 for keyword in EMAIL_KEYWORDS):
@@ -927,6 +989,7 @@ def apply_masking_rules():
                                 + CREDIT_CARD_KEYWORDS
                                 + NAME_KEYWORDS
                                 + PHONE_KEYWORDS
+                                + IDENTIFICATION_NO_KEYWORDS
                             )
                         ):
                             value = decipher_data(value, column_name)
