@@ -71,16 +71,11 @@ Ensure the following tools are installed:
    ```bash
    npm run dev    
    ```
-  
-4. **Access the Application**
-
-- **Frontend**: http://localhost:3000
-- **Node.js API**: http://localhost:5000
-- **Flask API**: http://localhost:5001
 
 ## Future Enhancements
 
 - Expand support for other file formats (e.g., .json, .xml).
+- Improving scalability.
 - Incorporate machine learning for intelligent data masking patterns.
 
 ## Contributing
