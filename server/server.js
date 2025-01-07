@@ -317,7 +317,7 @@ app.post('/verify-otp-login', (req, res) => {
             }
 
             // Generate JWT token
-            const token = jwt.sign({ user_id: otpRecord.user_id, email: email }, process.env.SECRET_KEY, { expiresIn: '1h' });
+            const token = jwt.sign({ user_id: otpRecord.user_id, email: email }, process.env.JWT_SECRET, { expiresIn: '1h' });
             console.log('Generated token:', token); // Log the generated token
 
             // Set the token in an HTTP-only cookie
@@ -597,7 +597,7 @@ const verifyToken = (req, res, next) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.SECRET_KEY);
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
         req.user = decoded;
         next();
     } catch (err) {
@@ -656,7 +656,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
         return res.status(403).json({ message: "User not authenticated" });
     }
 
-    jwt.verify(token, process.env.SECRET_KEY, async (err, decoded) => {
+    jwt.verify(token, process.env.JWT_SECRET, async (err, decoded) => {
         if (err) {
             console.error("JWT verification error:", err);
             return res.status(403).json({ message: "Invalid or expired token" });
